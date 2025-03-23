@@ -116,11 +116,11 @@ const saveSettings = () => {
   fs.writeFileSync(settingsFilePath, JSON.stringify(settings, null, 2));
 };
 
-const fileUrl = 'https://raw.githubusercontent.com/Victims-Team/Multi-tool/main/src/index.ts';
+const fileUrl = 'https://raw.githubusercontent.com/victims-lol/Multi-tool/main/src/index.ts';
 
 async function checarUpdates(versionAtual: string): Promise<boolean> {
   try {
-    const resposta = await fetch("https://api.github.com/repos/Victims-Team/Multi-tool/releases/latest");
+    const resposta = await fetch("https://api.github.com/repos/victims-lol/Multi-tool/releases/latest");
     const dados = await resposta.json();
     const latestVersion = dados.body;
 
@@ -201,7 +201,6 @@ const showMenu = () => {
   
   if (!process.env.CREATING_EXECUTABLE) {
     console.log(colorful(colors.green, '     [13] Criar Executável.'));
-    console.log(colorful(colors.green, '     [14] Auto Update.'));
   }
   
   console.log(colorful(colors.green, '     [99] Configuracoes.'));
