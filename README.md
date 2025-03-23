@@ -19,8 +19,9 @@ Para iniciar o projeto, execute o seguinte comando:
 - [Clear DM]
 - [Clear DM's]
 - [Clear DM Friends]
+- [Clear Content]
 - [Server Cloner]
-- [Triger]
+- [Trigger]
 - [Clear Friends]
 - [Clear Servers]
 - [Whitelist]
@@ -33,7 +34,7 @@ Para iniciar o projeto, execute o seguinte comando:
 - [Auto Update]
 
 ## Preview
-<img src="https://i.imgur.com/GdM7JU2.png">
+<img src="https://github.com/user-attachments/assets/dccdb159-5f8a-4de1-b46e-2d0ba68e5324">
 
 ## Em Breve
 - [Avatar Scraper]
