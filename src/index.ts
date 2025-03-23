@@ -4,6 +4,14 @@ import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
 
+declare global {
+  namespace NodeJS {
+    interface Process {
+      pkg?: boolean;
+    }
+  }
+}
+
 const client = new Client({});
 
 process.title = 'Multi-tool';
@@ -32,7 +40,11 @@ let defaultSettings: Settings = {
   stateRPC: true,
 };
 
-const settingsFilePath = path.resolve(__dirname, 'settings.json');
+const settingsFilePath = path.join(process.cwd(), 'settings.json');
+
+if (!fs.existsSync(settingsFilePath)) {
+  fs.writeFileSync(settingsFilePath, JSON.stringify(defaultSettings, null, 2), 'utf-8');
+}
 
 if (fs.existsSync(settingsFilePath)) {
   const fileContent = fs.readFileSync(settingsFilePath, 'utf-8');
@@ -42,8 +54,6 @@ if (fs.existsSync(settingsFilePath)) {
 } else {
   settings = defaultSettings;
 }
-
-fs.writeFileSync(settingsFilePath, JSON.stringify(settings, null, 2), 'utf-8');
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -90,7 +100,7 @@ const banner = `
                                                    `;
 
 let loggedInUser: string = '';
-const version = "1.72";
+const version = "1.71";
 
 const loadSettings = () => {
   if (fs.existsSync(settingsFilePath)) {
@@ -106,11 +116,11 @@ const saveSettings = () => {
   fs.writeFileSync(settingsFilePath, JSON.stringify(settings, null, 2));
 };
 
-const fileUrl = 'https://raw.githubusercontent.com/victims-lol/Multi-tool/main/src/index.ts';
+const fileUrl = 'https://raw.githubusercontent.com/Victims-Team/Multi-tool/main/src/index.ts';
 
 async function checarUpdates(versionAtual: string): Promise<boolean> {
   try {
-    const resposta = await fetch("https://api.github.com/repos/victims-lol/Multi-tool/releases/latest");
+    const resposta = await fetch("https://api.github.com/repos/Victims-Team/Multi-tool/releases/latest");
     const dados = await resposta.json();
     const latestVersion = dados.body;
 
@@ -143,17 +153,25 @@ client.once('ready', async () => {
     console.log(colorful(colors.purple, '     [x] Você está deslogado. Por favor, faça login.'));
     updateToken();
   } else {
-    const temAtualizacao = await checarUpdates(version);
+    if (!process.pkg) {
+      const temAtualizacao = await checarUpdates(version);
 
-    if (temAtualizacao) {
-      console.clear();
-      console.log(colorful(colors.purple, banner));
-      console.log('     [+] Há uma nova atualização disponível!');
-      console.log('     Digite "yes" para atualizar o arquivo ou qualquer outra tecla para continuar.');
-      
-      rl.question('', async (input) => {
-      });
-      return;
+      if (temAtualizacao) {
+        console.clear();
+        console.log(colorful(colors.purple, banner));
+        console.log('     [+] Há uma nova atualização disponível!');
+        console.log('     Digite "yes" para atualizar o arquivo ou qualquer outra tecla para continuar.');
+        
+        rl.question('', async (input) => {
+          if (input.toLowerCase() === 'yes') {
+            await atualizarArquivo();
+          }
+          await printAnimado('     [=] Bem-vindo ao Victims Multi-tool!');
+          await printAnimado('     [=] Carregando menu principal...');
+          showMenu();
+        });
+        return;
+      }
     }
 
     await printAnimado('     [=] Bem-vindo ao Victims Multi-tool!');
@@ -163,24 +181,29 @@ client.once('ready', async () => {
 });
 
 const showMenu = () => {
-  setStatus(client, 'Standing on the dashboard');
   console.clear();
   console.log(colorful(colors.purple, banner));
-  console.log(colorful(colors.purple, `     [=] Bem-vindo, ${loggedInUser}!`));
-  console.log(colorful(colors.purple, '     [=] Escolha uma função:'));
+  console.log(colorful(colors.purple, '     [=] Menu Principal'));
+  console.log(colorful(colors.purple, '     [=] Escolha uma opção:'));
   console.log("");
-  console.log(colorful(colors.green, '     [1] Limpar DM ou Canal.'));
-  console.log(colorful(colors.green, '     [2] Limpar todas as DMs abertas.'));
-  console.log(colorful(colors.green, '     [3] Limpar DM de Amigos.'));
-  console.log(colorful(colors.green, '     [4] Limpar Conteúdo Específico.'));
-  console.log(colorful(colors.green, '     [5] Definir Palavra-chave do Trigger.'));
-  console.log(colorful(colors.green, '     [6] Remover Amizades.'));
-  console.log(colorful(colors.green, '     [7] Clonar servidor. ( Sem perm em canais )'));
-  console.log(colorful(colors.green, '     [8] Remover Servidores.'));
-  console.log(colorful(colors.green, '     [9] Fechar todas as DMs.'));
+  console.log(colorful(colors.green, '     [1] Clear DM.'));
+  console.log(colorful(colors.green, '     [2] Clear DM\'s.'));
+  console.log(colorful(colors.green, '     [3] Clear DM Friends.'));
+  console.log(colorful(colors.green, '     [4] Clear Content.'));
+  console.log(colorful(colors.green, '     [5] Server Cloner.'));
+  console.log(colorful(colors.green, '     [6] Trigger.'));
+  console.log(colorful(colors.green, '     [7] Clear Friends.'));
+  console.log(colorful(colors.green, '     [8] Clear Servers.'));
+  console.log(colorful(colors.green, '     [9] Delete DMs.'));
   console.log(colorful(colors.green, '     [10] WhiteList.'));
   console.log(colorful(colors.green, '     [11] Utilidades em Call.'));
   console.log(colorful(colors.green, '     [12] Utilidades em Chat.'));
+  
+  if (!process.env.CREATING_EXECUTABLE) {
+    console.log(colorful(colors.green, '     [13] Criar Executável.'));
+    console.log(colorful(colors.green, '     [14] Auto Update.'));
+  }
+  
   console.log(colorful(colors.green, '     [99] Configuracoes.'));
   console.log(colorful(colors.green, '     [0] Fechar.'));
   console.log("");
@@ -191,14 +214,16 @@ const showMenu = () => {
       case '2': clearOpenDMs(); break;
       case '3': clearDmFriends(); break;
       case '4': clearContent(); break;
-      case '5': setTrigger(); break;
-      case '6': removeFriends(); break;
-      case '7': cloneServer(); break;
+      case '5': cloneServer(); break;
+      case '6': setTrigger(); break;
+      case '7': removeFriends(); break;
       case '8': removeServers(); break;
       case '9': deleteDms(); break;
       case '10': questionWhiteList(); break;
       case '11': utilInVoice(); break;
       case '12': utilInChannel(); break;
+      case '13': if (!process.env.CREATING_EXECUTABLE) createExecutable(); break;
+      case '14': if (!process.env.CREATING_EXECUTABLE) atualizarArquivo(); break;
       case '99': questionConfig(); break;
       case 'yes': atualizarArquivo(); break;
       case '0': process.exit(); break;
@@ -1621,6 +1646,85 @@ const proceedWithClear = async (type: 'image' | 'video' | 'file' | 'text', searc
       startCountdown(5);
     }
   });
+};
+
+const createExecutable = async () => {
+  console.clear();
+  console.log(colorful(colors.purple, banner));
+  console.log(colorful(colors.purple, '     [=] Criando Executável...'));
+  setStatus(client, "Criando Executável");
+
+  try {
+    process.env.CREATING_EXECUTABLE = 'true';
+
+    console.log(colorful(colors.purple, '     [=] Instalando dependências necessárias...'));
+    await new Promise<void>((resolve) => {
+      const { exec } = require('child_process');
+      exec('npm install pkg --save-dev', (error: any) => {
+        if (error) {
+          console.log(colorful(colors.red, `     [x] Erro ao instalar dependências: ${error}`));
+          resolve(void 0);
+        } else {
+          console.log(colorful(colors.green, '     [✓] Dependências instaladas com sucesso.'));
+          resolve(void 0);
+        }
+      });
+    });
+
+    console.log(colorful(colors.purple, '     [=] Compilando TypeScript...'));
+    await new Promise<void>((resolve) => {
+      const { exec } = require('child_process');
+      exec('npm run build', (error: any) => {
+        if (error) {
+          console.log(colorful(colors.red, `     [x] Erro ao compilar TypeScript: ${error}`));
+          resolve(void 0);
+        } else {
+          console.log(colorful(colors.green, '     [✓] TypeScript compilado com sucesso.'));
+          resolve(void 0);
+        }
+      });
+    });
+
+    console.log(colorful(colors.purple, '     [=] Criando executável...'));
+    await new Promise<void>((resolve) => {
+      const { exec } = require('child_process');
+      exec('npm run pkg', (error: any) => {
+        if (error) {
+          console.log(colorful(colors.red, `     [x] Erro ao criar executável: ${error}`));
+          resolve(void 0);
+        } else {
+          console.log(colorful(colors.green, '     [✓] Executável criado com sucesso!'));
+          resolve(void 0);
+        }
+      });
+    });
+
+    console.log(colorful(colors.purple, '     [=] Copiando arquivo de configurações...'));
+    try {
+      const settingsSource = path.join(process.cwd(), 'settings.json');
+      const settingsDest = path.join(process.cwd(), 'dist', 'settings.json');
+      
+      if (fs.existsSync(settingsSource)) {
+        fs.copyFileSync(settingsSource, settingsDest);
+        console.log(colorful(colors.green, '     [✓] Arquivo de configurações copiado com sucesso!'));
+      } else {
+        console.log(colorful(colors.yellow, '     [!] Arquivo settings.json não encontrado, criando um novo...'));
+        fs.writeFileSync(settingsDest, JSON.stringify(defaultSettings, null, 2), 'utf-8');
+        console.log(colorful(colors.green, '     [✓] Novo arquivo de configurações criado!'));
+      }
+    } catch (error) {
+      console.log(colorful(colors.red, `     [x] Erro ao copiar arquivo de configurações: ${error}`));
+    }
+
+    console.log(colorful(colors.purple, '     [=] O executável está na pasta dist com o nome multi-tool.exe'));
+    console.log(colorful(colors.purple, '\n     [=] Processo concluído!'));
+    startCountdown(5);
+  } catch (error) {
+    console.log(colorful(colors.red, `     [x] Erro ao criar executável: ${error}`));
+    startCountdown(5);
+  } finally {
+    delete process.env.CREATING_EXECUTABLE;
+  }
 };
 
 loginClient();
