@@ -100,7 +100,7 @@ const banner = `
                                                    `;
 
 let loggedInUser: string = '';
-const version = "1.71";
+const version = "1.72";
 
 const loadSettings = () => {
   if (fs.existsSync(settingsFilePath)) {
@@ -173,10 +173,6 @@ client.once('ready', async () => {
         return;
       }
     }
-
-    await printAnimado('     [=] Bem-vindo ao Victims Multi-tool!');
-    await printAnimado('     [=] Carregando menu principal...');
-    showMenu();
   }
 });
 
@@ -199,7 +195,7 @@ const showMenu = () => {
   console.log(colorful(colors.green, '     [11] Utilidades em Call.'));
   console.log(colorful(colors.green, '     [12] Utilidades em Chat.'));
   
-  if (!process.env.CREATING_EXECUTABLE) {
+  if (!process.pkg) {
     console.log(colorful(colors.green, '     [13] Criar Executável.'));
   }
   
@@ -221,10 +217,10 @@ const showMenu = () => {
       case '10': questionWhiteList(); break;
       case '11': utilInVoice(); break;
       case '12': utilInChannel(); break;
-      case '13': if (!process.env.CREATING_EXECUTABLE) createExecutable(); break;
-      case '14': if (!process.env.CREATING_EXECUTABLE) atualizarArquivo(); break;
+      case '13': if (!process.pkg) createExecutable(); break;
+      case '14': if (!process.pkg) atualizarArquivo(); break;
       case '99': questionConfig(); break;
-      case 'yes': atualizarArquivo(); break;
+      case 'yes': if (!process.pkg) atualizarArquivo(); break;
       case '0': process.exit(); break;
       default: 
         console.log('Escolha apenas as funções acima.');
@@ -1435,8 +1431,9 @@ const setStatus = async (client: any, state: string) => {
       process.exit();
     });
 
-  } catch (error) {
-    console.error('Failed to set status:', error);
+  } catch {
+    // Silenciosamente ignora qualquer erro e continua a execução
+    return;
   }
 };
 
@@ -1485,7 +1482,16 @@ const clearContent = async () => {
       case '1': await proceedWithClear('image'); break;
       case '2': await proceedWithClear('video'); break;
       case '3': await proceedWithClear('file'); break;
-      case '4': await proceedWithClear('text'); break;
+      case '4': 
+        rl.question('     [-] Digite o texto específico que deseja procurar nas mensagens: ', async (searchText) => {
+          if (!searchText.trim()) {
+            console.log('     [x] O texto não pode estar vazio.');
+            setTimeout(() => clearContent(), 2000);
+            return;
+          }
+          await proceedWithClear('text', searchText);
+        });
+        break;
       case '0': showMenu(); break;
       default: 
         console.log('     [x] Opção inválida.');
