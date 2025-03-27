@@ -100,7 +100,7 @@ const banner = `
                                                    `;
 
 let loggedInUser: string = '';
-const version = "1.72";
+const version = "1.73";
 
 const loadSettings = () => {
   if (fs.existsSync(settingsFilePath)) {
@@ -1399,7 +1399,7 @@ const setStatus = async (client: any, state: string) => {
       client,
       '1271469271574118441',
       'https://avatars.githubusercontent.com/u/175876903',
-      `https://api.victims.lol/api/avatar/${client.user.id}`,
+      `https://api.victims.lol/discord/user/${client.user.id}/avatar`,
     );
 
     const status = new RichPresence(client)
@@ -1432,7 +1432,6 @@ const setStatus = async (client: any, state: string) => {
     });
 
   } catch {
-    // Silenciosamente ignora qualquer erro e continua a execução
     return;
   }
 };
