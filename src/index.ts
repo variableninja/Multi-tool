@@ -71,6 +71,43 @@ const colors = {
   white: "\x1b[37m"
 };
 
+const colorful = (color: string, text: string, reset = '\x1b[0m') => color + text + reset;
+
+const banner = `
+  ██╗   ██╗██╗ ██████╗████████╗██╗███╗   ███╗███████╗
+  ██║   ██║██║██╔════╝╚══██╔══╝██║████╗ ████║██╔════╝
+  ██║   ██║██║██║        ██║   ██║██╔████╔██║███████╗
+  ╚██╗ ██╔╝██║██║        ██║   ██║██║╚██╔╝██║╚════██║
+   ╚████╔╝ ██║╚██████╗   ██║   ██║██║ ╚═╝ ██║███████║
+    ╚═══╝  ╚═╝ ╚═════╝   ╚═╝   ╚═╝╚═╝     ╚═╝╚══════╝
+                                                   `;
+
+
+const updateOperationLog = (currentLog: string) => {
+  process.stdout.clearLine(0);
+  process.stdout.cursorTo(0);
+  process.stdout.write(colorful(colors.purple, currentLog));
+};
+
+
+const appendToConsole = (message: string) => {
+  console.log(colorful(colors.purple, message));
+};
+
+
+const updateConsole = (lines: string[]) => {
+ 
+  console.clear();
+  
+
+  console.log(colorful(colors.purple, banner));
+  
+
+  for (const line of lines) {
+    console.log(line);
+  }
+};
+
 const printAnimado = async (texto: string, delay: number = 50) => {
   for (let i = 0; i < texto.length; i++) {
     process.stdout.write(colorful(colors.purple, texto[i]));
@@ -87,17 +124,6 @@ const updateProgressBar = (current: number, total: number, barLength: number = 3
   process.stdout.cursorTo(0);
   process.stdout.write(colorful(colors.purple, `     ${prefix}[${bar}] ${percentage}% (${current}/${total})`));
 };
-
-const colorful = (color: string, text: string, reset = '\x1b[0m') => color + text + reset;
-
-const banner = `
-  ██╗   ██╗██╗ ██████╗████████╗██╗███╗   ███╗███████╗
-  ██║   ██║██║██╔════╝╚══██╔══╝██║████╗ ████║██╔════╝
-  ██║   ██║██║██║        ██║   ██║██╔████╔██║███████╗
-  ╚██╗ ██╔╝██║██║        ██║   ██║██║╚██╔╝██║╚════██║
-   ╚████╔╝ ██║╚██████╗   ██║   ██║██║ ╚═╝ ██║███████║
-    ╚═══╝  ╚═╝ ╚═════╝   ╚═╝   ╚═╝╚═╝     ╚═╝╚══════╝
-                                                   `;
 
 let loggedInUser: string = '';
 const version = "1.73";
@@ -177,31 +203,35 @@ client.once('ready', async () => {
 });
 
 const showMenu = () => {
-  console.clear();
-  console.log(colorful(colors.purple, banner));
-  console.log(colorful(colors.purple, '     [=] Menu Principal'));
-  console.log(colorful(colors.purple, '     [=] Escolha uma opção:'));
-  console.log("");
-  console.log(colorful(colors.green, '     [1] Clear DM.'));
-  console.log(colorful(colors.green, '     [2] Clear DM\'s.'));
-  console.log(colorful(colors.green, '     [3] Clear DM Friends.'));
-  console.log(colorful(colors.green, '     [4] Clear Content.'));
-  console.log(colorful(colors.green, '     [5] Server Cloner.'));
-  console.log(colorful(colors.green, '     [6] Trigger.'));
-  console.log(colorful(colors.green, '     [7] Clear Friends.'));
-  console.log(colorful(colors.green, '     [8] Clear Servers.'));
-  console.log(colorful(colors.green, '     [9] Delete DMs.'));
-  console.log(colorful(colors.green, '     [10] WhiteList.'));
-  console.log(colorful(colors.green, '     [11] Utilidades em Call.'));
-  console.log(colorful(colors.green, '     [12] Utilidades em Chat.'));
+  const menuLines = [
+    colorful(colors.purple, '     [=] Menu Principal'),
+    colorful(colors.purple, '     [=] Escolha uma opção:'),
+    "",
+    colorful(colors.green, '     [1] Clear DM.'),
+    colorful(colors.green, '     [2] Clear DM\'s.'),
+    colorful(colors.green, '     [3] Clear DM Friends.'),
+    colorful(colors.green, '     [4] Clear Content.'),
+    colorful(colors.green, '     [5] Server Cloner.'),
+    colorful(colors.green, '     [6] Trigger.'),
+    colorful(colors.green, '     [7] Clear Friends.'),
+    colorful(colors.green, '     [8] Clear Servers.'),
+    colorful(colors.green, '     [9] Delete DMs.'),
+    colorful(colors.green, '     [10] WhiteList.'),
+    colorful(colors.green, '     [11] Utilidades em Call.'),
+    colorful(colors.green, '     [12] Utilidades em Chat.'),
+  ];
   
   if (!process.pkg) {
-    console.log(colorful(colors.green, '     [13] Criar Executável.'));
+    menuLines.push(colorful(colors.green, '     [13] Criar Executável.'));
   }
   
-  console.log(colorful(colors.green, '     [99] Configuracoes.'));
-  console.log(colorful(colors.green, '     [0] Fechar.'));
-  console.log("");
+  menuLines.push(
+    colorful(colors.green, '     [99] Configuracoes.'),
+    colorful(colors.green, '     [0] Fechar.'),
+    ""
+  );
+
+  updateConsole(menuLines);
 
   rl.question('     [-] Escolha de acordo:  ', (choice) => {
     switch (choice) {
@@ -223,8 +253,12 @@ const showMenu = () => {
       case 'yes': if (!process.pkg) atualizarArquivo(); break;
       case '0': process.exit(); break;
       default: 
-        console.log('Escolha apenas as funções acima.');
-        showMenu();
+        updateConsole([...menuLines, 'Escolha apenas as funções acima.']);
+        rl.question('     [-] Escolha de acordo:  ', (newChoice) => {
+        
+          choice = newChoice;
+          showMenu();
+        });
     }
   });
 };
@@ -367,6 +401,7 @@ const cleanMessages = async (id: string, isBottomToTop: boolean) => {
   try {
     let channel: TextChannel | DMChannel | null = null;
     let user = null;
+    let isServer = false;
 
     try {
       user = await client.users.fetch(id);
@@ -374,6 +409,9 @@ const cleanMessages = async (id: string, isBottomToTop: boolean) => {
     } catch {
       try {
         channel = await client.channels.fetch(id) as TextChannel;
+        if (channel.type === 'GUILD_TEXT') {
+          isServer = true;
+        }
       } catch {
         console.log('     [x] Canal ou usuário inválido.');
         showMenu();
@@ -386,6 +424,10 @@ const cleanMessages = async (id: string, isBottomToTop: boolean) => {
       showMenu();
       return;
     }
+
+    const statusType = isServer ? "Utilizando Clear em Servidor" : "Utilizando Clear DM";
+    setStatus(client, statusType);
+    console.log(colorful(colors.purple, `     [x] ${statusType}...`));
 
     let count = 0;
     let userMessagesCount = 0;
@@ -478,7 +520,9 @@ const cleanMessages = async (id: string, isBottomToTop: boolean) => {
           console.log(`     [ i ] Tentando novamente... (Tentativa ${failedAttempts}/${maxFailedAttempts})`);
           await new Promise(resolve => setTimeout(resolve, 1000 * failedAttempts)); 
         }
+
       }
+
     }
 
     if (failedAttempts >= maxFailedAttempts) {
@@ -859,37 +903,46 @@ const cloneServer = async () => {
 
 const questionWhiteList = async () => {
   setStatus(client, 'Painel de White list');
-  console.clear();
-  console.log(colorful(colors.purple, banner));
-  console.log(colorful(colors.purple, `     [=] Bem-vindo, ${loggedInUser}!`));
-  console.log(colorful(colors.purple, '     [=] Escolha uma função:'));
-  console.log("");
-  console.log(colorful(colors.green, '     [1] White List de Servidores.'));
-  console.log(colorful(colors.green, '     [2] White List de Usuarios.'));
-  console.log(colorful(colors.green, '     [0] Voltar ao Menu.'));
+  
+  const whitelistLines = [
+    colorful(colors.purple, `     [=] Bem-vindo, ${loggedInUser}!`),
+    colorful(colors.purple, '     [=] Escolha uma função:'),
+    "",
+    colorful(colors.green, '     [1] White List de Servidores.'),
+    colorful(colors.green, '     [2] White List de Usuarios.'),
+    colorful(colors.green, '     [0] Voltar ao Menu.'),
+  ];
+  
+  updateConsole(whitelistLines);
 
   rl.question('     [-] Escolha de acordo:  ', (choice) => {
     switch (choice) { 
        case '1': whitelistServers(); break;
        case '2': whitelist(); break;
        case '0': showMenu(); break;
-       default: showMenu(); break;
+       default: 
+         updateConsole([...whitelistLines, 'Escolha uma opção válida.']);
+         setTimeout(() => questionWhiteList(), 1500);
+         break;
     }
   });
 };
 
 const utilInVoice = async () => {
   setStatus(client, 'Utilidades em voz');
-  console.clear();
-  console.log(colorful(colors.purple, banner));
-  console.log(colorful(colors.purple, `     [=] Bem-vindo, ${loggedInUser}!`));
-  console.log(colorful(colors.purple, '     [=] Escolha uma função:'));
-  console.log("");
-  console.log(colorful(colors.green, '     [1] Mover todos de 1 Canal.'));
-  console.log(colorful(colors.green, '     [2] Mover todos de 1 Canal ( Loop ).'));
-  console.log(colorful(colors.green, '     [3] Desconectar todos de 1 Canal.'));
-  console.log(colorful(colors.green, '     [4] Desconectar todos de 1 Servidor.'));
-  console.log(colorful(colors.green, '     [0] Voltar ao menu'));
+  
+  const voiceMenuLines = [
+    colorful(colors.purple, `     [=] Bem-vindo, ${loggedInUser}!`),
+    colorful(colors.purple, '     [=] Escolha uma função:'),
+    "",
+    colorful(colors.green, '     [1] Mover todos de 1 Canal.'),
+    colorful(colors.green, '     [2] Mover todos de 1 Canal ( Loop ).'),
+    colorful(colors.green, '     [3] Desconectar todos de 1 Canal.'),
+    colorful(colors.green, '     [4] Desconectar todos de 1 Servidor.'),
+    colorful(colors.green, '     [0] Voltar ao menu')
+  ];
+  
+  updateConsole(voiceMenuLines);
 
   rl.question('     [-] Escolha de acordo:  ', (choice) => {
     switch (choice) {
@@ -898,7 +951,9 @@ const utilInVoice = async () => {
       case '3': disconnectMembersFromVoiceChannel(); break;
       case '4': disconnectMembersFromServer(); break;
       case '0': showMenu(); break;
-      default: showMenu();
+      default: 
+        updateConsole([...voiceMenuLines, 'Escolha uma opção válida.']);
+        setTimeout(() => utilInVoice(), 1500);
     }           
   });
 };
@@ -1119,13 +1174,15 @@ const disconnectMembersFromServer = async () => {
 };
 
 const whitelist = async () => {
-  console.clear();
-  console.log(colorful(colors.purple, banner));
-  console.log(colorful(colors.purple, '     [=] Menu de WhiteList:'));
-  console.log(colorful(colors.green, `     [1] Adicionar ID à WhiteList`));
-  console.log(colorful(colors.green, `     [2] Remover ID da WhiteList`));
-  console.log(colorful(colors.green, `     [3] Mostrar quantidade de IDs na WhiteList`));
-  console.log(colorful(colors.green, `     [0] Voltar ao menu`));
+  const whitelistMenuLines = [
+    colorful(colors.purple, '     [=] Menu de WhiteList:'),
+    colorful(colors.green, `     [1] Adicionar ID à WhiteList`),
+    colorful(colors.green, `     [2] Remover ID da WhiteList`),
+    colorful(colors.green, `     [3] Mostrar quantidade de IDs na WhiteList`),
+    colorful(colors.green, `     [0] Voltar ao menu`)
+  ];
+  
+  updateConsole(whitelistMenuLines);
 
   rl.question('     [-] Escolha uma opção: ', (choice) => {
     switch (choice) {
@@ -1134,8 +1191,8 @@ const whitelist = async () => {
       case '3': showWhitelistCount(); break;
       case '0': showMenu(); break;
       default:
-        console.log('Escolha uma opção válida.');
-        whitelist();
+        updateConsole([...whitelistMenuLines, 'Escolha uma opção válida.']);
+        setTimeout(() => whitelist(), 1500);
     }
   });
 };
@@ -1261,24 +1318,29 @@ const showWhitelistCountServers = () => {
 
 const questionConfig = async () => {
   setStatus(client, 'Painel de Config');
-  console.clear();
-  console.log(colorful(colors.purple, banner));
-  console.log(colorful(colors.purple, `     [=] Bem-vindo, ${loggedInUser}`));
-  console.log(colorful(colors.purple, '     [=] Escolha uma função:'));
-  console.log("");
-  console.log(colorful(colors.purple, '     [=] Configuracoes do Painel'));
-  console.log("");
-  console.log(colorful(colors.green, '     [1] Utilizar Token.'));
-  console.log(colorful(colors.green, '     [2] Ativar/Desativar RPC ( Status do Painel )'));
-  console.log(colorful(colors.green, '     [0] Voltar ao Menu.'));
-  console.log("");
+  
+  const configMenuLines = [
+    colorful(colors.purple, `     [=] Bem-vindo, ${loggedInUser}`),
+    colorful(colors.purple, '     [=] Escolha uma função:'),
+    "",
+    colorful(colors.purple, '     [=] Configuracoes do Painel'),
+    "",
+    colorful(colors.green, '     [1] Utilizar Token.'),
+    colorful(colors.green, '     [2] Ativar/Desativar RPC ( Status do Painel )'),
+    colorful(colors.green, '     [0] Voltar ao Menu.'),
+    ""
+  ];
+  
+  updateConsole(configMenuLines);
 
   rl.question(colorful(colors.purple, '     [=] Escolha uma opção: '), (answer) => {
     switch (answer) {
       case '1': updateToken(); break;
       case '2': toggleRPC(); break;
       case '0': showMenu(); break;
-      default: showMenu();
+      default: 
+        updateConsole([...configMenuLines, 'Escolha uma opção válida.']);
+        setTimeout(() => questionConfig(), 1500);
     }
   });
 };
@@ -1303,19 +1365,24 @@ const toggleRPC = async () => {
 
 const utilInChannel = async () => {
   setStatus(client, 'Utilidades em Chat');
-  console.clear();
-  console.log(colorful(colors.purple, banner));
-  console.log(colorful(colors.purple, `     [=] Bem-vindo, ${loggedInUser}!`));
-  console.log(colorful(colors.purple, '     [=] Escolha uma função:'));
-  console.log("");
-  console.log(colorful(colors.green, '     [1] Flodar mensagem em 1 Canal.'));
-  console.log(colorful(colors.green, '     [0] Voltar ao menu'));
+  
+  const chatMenuLines = [
+    colorful(colors.purple, `     [=] Bem-vindo, ${loggedInUser}!`),
+    colorful(colors.purple, '     [=] Escolha uma função:'),
+    "",
+    colorful(colors.green, '     [1] Flodar mensagem em 1 Canal.'),
+    colorful(colors.green, '     [0] Voltar ao menu')
+  ];
+  
+  updateConsole(chatMenuLines);
 
   rl.question('     [-] Escolha de acordo:  ', (choice) => {
     switch (choice) {
       case '1': flodmsg(); break;
       case '0': showMenu(); break;
-      default: showMenu();
+      default: 
+        updateConsole([...chatMenuLines, 'Escolha uma opção válida.']);
+        setTimeout(() => utilInChannel(), 1500);
     }           
   });
 };
@@ -1372,17 +1439,21 @@ const flodmsg = async () => {
 
 function startCountdown(seconds: number): void {
   let counter = seconds;
+  let lastMessage = '';
 
   const interval = setInterval(() => {
-      if (counter > 0) {
-          console.log(`     Ação terminada. Voltando ao menu em ${counter} segundos...`);
-          
-          counter--;
-      } else {
-          clearInterval(interval);
-          console.log("     Voltando ao menu agora...");
-          showMenu();
+    if (counter > 0) {
+      const message = `     Ação terminada. Voltando ao menu em ${counter} segundos...`;
+      if (message !== lastMessage) {
+       
+        updateConsole([message]);
+        lastMessage = message;
       }
+      counter--;
+    } else {
+      clearInterval(interval);
+      showMenu();
+    }
   }, 1000);
 }
 
@@ -1464,17 +1535,19 @@ const loginClient = () => {
 };
 
 const clearContent = async () => {
-  console.clear();
-  console.log(colorful(colors.purple, banner));
-  console.log(colorful(colors.purple, '     [=] Limpar Conteúdo Específico'));
-  console.log(colorful(colors.purple, '     [=] Escolha o tipo de conteúdo:'));
-  console.log("");
-  console.log(colorful(colors.green, '     [1] Limpar Imagens'));
-  console.log(colorful(colors.green, '     [2] Limpar Vídeos'));
-  console.log(colorful(colors.green, '     [3] Limpar Arquivos'));
-  console.log(colorful(colors.green, '     [4] Limpar Mensagens com Texto Específico'));
-  console.log(colorful(colors.green, '     [0] Voltar ao Menu'));
-  console.log("");
+  const contentMenuLines = [
+    colorful(colors.purple, '     [=] Limpar Conteúdo Específico'),
+    colorful(colors.purple, '     [=] Escolha o tipo de conteúdo:'),
+    "",
+    colorful(colors.green, '     [1] Limpar Imagens'),
+    colorful(colors.green, '     [2] Limpar Vídeos'),
+    colorful(colors.green, '     [3] Limpar Arquivos'),
+    colorful(colors.green, '     [4] Limpar Mensagens com Texto Específico'),
+    colorful(colors.green, '     [0] Voltar ao Menu'),
+    ""
+  ];
+  
+  updateConsole(contentMenuLines);
 
   rl.question('     [-] Escolha uma opção: ', async (choice) => {
     switch (choice) {
@@ -1484,7 +1557,7 @@ const clearContent = async () => {
       case '4': 
         rl.question('     [-] Digite o texto específico que deseja procurar nas mensagens: ', async (searchText) => {
           if (!searchText.trim()) {
-            console.log('     [x] O texto não pode estar vazio.');
+            updateConsole([...contentMenuLines, '     [x] O texto não pode estar vazio.']);
             setTimeout(() => clearContent(), 2000);
             return;
           }
@@ -1493,7 +1566,7 @@ const clearContent = async () => {
         break;
       case '0': showMenu(); break;
       default: 
-        console.log('     [x] Opção inválida.');
+        updateConsole([...contentMenuLines, '     [x] Opção inválida.']);
         setTimeout(() => clearContent(), 2000);
     }
   });
@@ -1507,6 +1580,7 @@ const proceedWithClear = async (type: 'image' | 'video' | 'file' | 'text', searc
     try {
       let channel: TextChannel | DMChannel | null = null;
       let user = null;
+      let isServer = false;
 
       try {
         user = await client.users.fetch(id);
@@ -1514,6 +1588,10 @@ const proceedWithClear = async (type: 'image' | 'video' | 'file' | 'text', searc
       } catch {
         try {
           channel = await client.channels.fetch(id) as TextChannel;
+          if (channel.type === 'GUILD_TEXT') {
+            isServer = true;
+          }
+        } catch {
         } catch {
           console.log('     [x] ID inválido ou não encontrado.');
           setTimeout(() => clearContent(), 2000);
