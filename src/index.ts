@@ -1592,7 +1592,6 @@ const proceedWithClear = async (type: 'image' | 'video' | 'file' | 'text', searc
             isServer = true;
           }
         } catch {
-        } catch {
           console.log('     [x] ID inválido ou não encontrado.');
           setTimeout(() => clearContent(), 2000);
           return;
